@@ -1,9 +1,0 @@
-/Users/chikhaliyaankur/Desktop/my-project/artificeatelier/backend/obj/Debug/net8.0/backend.csproj.AssemblyReference.cache
-/Users/chikhaliyaankur/Desktop/my-project/artificeatelier/backend/obj/Debug/net8.0/rpswa.dswa.cache.json
-/Users/chikhaliyaankur/Desktop/my-project/artificeatelier/backend/obj/Debug/net8.0/backend.GeneratedMSBuildEditorConfig.editorconfig
-/Users/chikhaliyaankur/Desktop/my-project/artificeatelier/backend/obj/Debug/net8.0/backend.AssemblyInfoInputs.cache
-/Users/chikhaliyaankur/Desktop/my-project/artificeatelier/backend/obj/Debug/net8.0/backend.AssemblyInfo.cs
-/Users/chikhaliyaankur/Desktop/my-project/artificeatelier/backend/obj/Debug/net8.0/backend.csproj.CoreCompileInputs.cache
-/Users/chikhaliyaankur/Desktop/my-project/artificeatelier/backend/obj/Debug/net8.0/backend.MvcApplicationPartsAssemblyInfo.cs
-/Users/chikhaliyaankur/Desktop/my-project/artificeatelier/backend/obj/Debug/net8.0/backend.MvcApplicationPartsAssemblyInfo.cache
-/Users/chikhaliyaankur/Desktop/my-project/artificeatelier/backend/obj/Debug/net8.0/backend.sourcelink.json
