@@ -53,12 +53,19 @@ namespace backend.Services
         {
             var form = new Dictionary<string, string>
             {
-                ["auth_key"] = _apiKey,
                 ["text"] = text,
                 ["target_lang"] = targetLang
             };
 
-            using var response = await _http.PostAsync(_apiUrl, new FormUrlEncodedContent(form));
+            using var request = new HttpRequestMessage(HttpMethod.Post, _apiUrl)
+            {
+                Content = new FormUrlEncodedContent(form)
+            };
+            // DeepL rejects the older `auth_key` form-field style with 403 now —
+            // the key must go in this header instead.
+            request.Headers.Add("Authorization", $"DeepL-Auth-Key {_apiKey}");
+
+            using var response = await _http.SendAsync(request);
             if (!response.IsSuccessStatusCode)
                 return null;
 
