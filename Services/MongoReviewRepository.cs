@@ -12,6 +12,9 @@ namespace backend.Services
         public MongoReviewRepository(IMongoDatabase database)
         {
             _collection = database.GetCollection<Review>("reviews");
+
+            var indexKeys = Builders<Review>.IndexKeys.Descending(r => r.CreatedAt);
+            _collection.Indexes.CreateOne(new CreateIndexModel<Review>(indexKeys));
         }
 
         public async Task<Review> InsertAsync(Review review)

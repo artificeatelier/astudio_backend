@@ -24,8 +24,17 @@ namespace backend.Controllers
         {
             var clampedSkip = PaginationHelper.ClampSkip(skip);
             var clampedLimit = PaginationHelper.ClampLimit(limit);
-            var (items, hasMore) = await _repository.GetPageAsync(clampedSkip, clampedLimit);
-            return Ok(new { items, hasMore });
+
+            try
+            {
+                var (items, hasMore) = await _repository.GetPageAsync(clampedSkip, clampedLimit);
+                return Ok(new { items, hasMore });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error fetching reviews: {ex.Message}");
+                return StatusCode(500, new { message = "Could not load reviews, please try again." });
+            }
         }
 
         [HttpPost]
@@ -41,9 +50,9 @@ namespace backend.Controllers
 
             var review = new Review
             {
-                Name = request.Name.Trim(),
+                Name = request.Name!.Trim(),
                 Rating = request.Rating,
-                Text = request.Text.Trim(),
+                Text = request.Text!.Trim(),
                 CreatedAt = DateTime.UtcNow
             };
 
