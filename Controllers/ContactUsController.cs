@@ -1,5 +1,7 @@
 ﻿using backend.Models;
+using backend.Services;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
 using MimeKit;
 using MailKit.Net.Smtp;
 using System;
@@ -13,10 +15,23 @@ namespace backend.Controllers
     [ApiController]
     public class ContactUSController : ControllerBase
     {
+        private readonly IConfiguration _configuration;
+        private readonly InMemoryRateLimiter _rateLimiter;
+
+        public ContactUSController(IConfiguration configuration, InMemoryRateLimiter rateLimiter)
+        {
+            _configuration = configuration;
+            _rateLimiter = rateLimiter;
+        }
+
         [HttpPost]
         public async Task<IActionResult> Post(ContactUsPostModel value)
         {
             Console.WriteLine("Endpoint reached");
+
+            var ip = HttpContext?.Connection?.RemoteIpAddress?.ToString() ?? "unknown";
+            if (!_rateLimiter.TryRegister(ip, DateTime.UtcNow, TimeSpan.FromSeconds(60)))
+                return StatusCode(429, new { message = "Please wait a minute before submitting another message." });
 
             // Save the data
             ContactUsData.Data.Add(value);
@@ -34,9 +49,14 @@ namespace backend.Controllers
         {
             try
             {
+                var fromAddress = _configuration["Smtp:FromAddress"] ?? "";
+                var toAddress = _configuration["Smtp:ToAddress"] ?? "";
+                var username = _configuration["Smtp:Username"] ?? "";
+                var password = _configuration["Smtp:Password"] ?? "";
+
                 var email = new MimeMessage();
-                email.From.Add(MailboxAddress.Parse("bhavyavasoya01@gmail.com"));
-                email.To.Add(MailboxAddress.Parse("bhavyanvasoya@gmail.com"));
+                email.From.Add(MailboxAddress.Parse(fromAddress));
+                email.To.Add(MailboxAddress.Parse(toAddress));
                 email.Subject = "Contact Us Form";
                 email.Body = new TextPart(TextFormat.Html) { Text = $"<h1>Messages: {value.Message}</h1>" +
                     $"</br>" +
@@ -47,7 +67,7 @@ namespace backend.Controllers
                 // send email
                 using var smtp = new SmtpClient();
                 smtp.Connect("smtp.gmail.com", 587, SecureSocketOptions.StartTls);
-                smtp.Authenticate("bhavyanvasoya@gmail.com", "jebfielqfqhdhfwx");
+                smtp.Authenticate(username, password);
                 smtp.Send(email);
                 smtp.Disconnect(true);
 
