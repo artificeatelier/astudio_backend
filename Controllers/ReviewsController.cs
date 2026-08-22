@@ -45,8 +45,8 @@ namespace backend.Controllers
                 return BadRequest(new { errors });
 
             var ip = HttpContext?.Connection?.RemoteIpAddress?.ToString() ?? "unknown";
-            if (!_rateLimiter.TryRegister(ip, DateTime.UtcNow, TimeSpan.FromSeconds(60)))
-                return StatusCode(429, new { message = "Please wait a minute before submitting another review." });
+            if (!_rateLimiter.TryRegister(ip, DateTime.UtcNow, TimeSpan.FromSeconds(10)))
+                return StatusCode(429, new { message = "Please wait a few seconds before submitting another review." });
 
             var review = new Review
             {
