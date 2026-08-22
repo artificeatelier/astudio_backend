@@ -8,9 +8,9 @@ using Xunit;
 
 public class ReviewsControllerTests
 {
-    private static ReviewsController MakeController(IReviewRepository? repo = null, InMemoryRateLimiter? limiter = null)
+    private static ReviewsController MakeController(IReviewRepository? repo = null, InMemoryRateLimiter? limiter = null, ITranslationService? translationService = null)
     {
-        return new ReviewsController(repo ?? new FakeReviewRepository(), limiter ?? new InMemoryRateLimiter());
+        return new ReviewsController(repo ?? new FakeReviewRepository(), limiter ?? new InMemoryRateLimiter(), translationService ?? new FakeTranslationService());
     }
 
     [Fact]
@@ -63,6 +63,35 @@ public class ReviewsControllerTests
 
         var status = Assert.IsType<ObjectResult>(second);
         Assert.Equal(429, status.StatusCode);
+    }
+
+    [Fact]
+    public async Task Post_stores_translation_when_translation_service_returns_one()
+    {
+        var translationService = new FakeTranslationService(new TranslationResult("en", "Excellent travail."));
+        var controller = MakeController(translationService: translationService);
+        var request = new ReviewCreateRequest { Name = "Priya", Rating = 5, Text = "Great work." };
+
+        var result = await controller.Post(request);
+
+        var ok = Assert.IsType<OkObjectResult>(result);
+        var saved = Assert.IsType<Review>(ok.Value);
+        Assert.Equal("en", saved.SourceLang);
+        Assert.Equal("Excellent travail.", saved.TranslatedText);
+    }
+
+    [Fact]
+    public async Task Post_saves_review_with_no_translation_when_translation_service_returns_null()
+    {
+        var controller = MakeController(translationService: new FakeTranslationService(null));
+        var request = new ReviewCreateRequest { Name = "Priya", Rating = 5, Text = "Great work." };
+
+        var result = await controller.Post(request);
+
+        var ok = Assert.IsType<OkObjectResult>(result);
+        var saved = Assert.IsType<Review>(ok.Value);
+        Assert.Null(saved.SourceLang);
+        Assert.Null(saved.TranslatedText);
     }
 
     [Fact]

@@ -12,11 +12,13 @@ namespace backend.Controllers
     {
         private readonly IReviewRepository _repository;
         private readonly InMemoryRateLimiter _rateLimiter;
+        private readonly ITranslationService _translationService;
 
-        public ReviewsController(IReviewRepository repository, InMemoryRateLimiter rateLimiter)
+        public ReviewsController(IReviewRepository repository, InMemoryRateLimiter rateLimiter, ITranslationService translationService)
         {
             _repository = repository;
             _rateLimiter = rateLimiter;
+            _translationService = translationService;
         }
 
         [HttpGet]
@@ -48,11 +50,34 @@ namespace backend.Controllers
             if (!_rateLimiter.TryRegister(ip, DateTime.UtcNow, TimeSpan.FromSeconds(10)))
                 return StatusCode(429, new { message = "Please wait a few seconds before submitting another review." });
 
+            var trimmedText = request.Text!.Trim();
+
+            // Translation is a nice-to-have on top of the review, not a
+            // requirement for it — any failure here (unconfigured key,
+            // DeepL outage, network error) must not block saving the review.
+            string? translatedText = null;
+            string? sourceLang = null;
+            try
+            {
+                var translation = await _translationService.TranslateAsync(trimmedText);
+                if (translation != null)
+                {
+                    translatedText = translation.TranslatedText;
+                    sourceLang = translation.SourceLang;
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Translation failed, saving review without it: {ex.Message}");
+            }
+
             var review = new Review
             {
                 Name = request.Name!.Trim(),
                 Rating = request.Rating,
-                Text = request.Text!.Trim(),
+                Text = trimmedText,
+                TranslatedText = translatedText,
+                SourceLang = sourceLang,
                 CreatedAt = DateTime.UtcNow
             };
 

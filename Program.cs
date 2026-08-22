@@ -21,6 +21,9 @@ builder.Services.AddSingleton<IMongoDatabase>(sp =>
 builder.Services.AddSingleton<IReviewRepository, MongoReviewRepository>();
 builder.Services.AddSingleton<InMemoryRateLimiter>();
 
+builder.Services.Configure<DeepLSettings>(builder.Configuration.GetSection("DeepL"));
+builder.Services.AddHttpClient<ITranslationService, DeepLTranslationService>();
+
 var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() ?? Array.Empty<string>();
 builder.Services.AddCors(options =>
 {
