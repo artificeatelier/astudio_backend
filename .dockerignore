@@ -1,0 +1,6 @@
+bin/
+obj/
+backend.Tests/bin/
+backend.Tests/obj/
+.git/
+.superpowers/
