@@ -53,6 +53,8 @@ namespace backend.Controllers
                 var toAddress = _configuration["Smtp:ToAddress"] ?? "";
                 var username = _configuration["Smtp:Username"] ?? "";
                 var password = _configuration["Smtp:Password"] ?? "";
+                var host = _configuration["Smtp:Host"] ?? "smtp.gmail.com";
+                var port = int.TryParse(_configuration["Smtp:Port"], out var parsedPort) ? parsedPort : 587;
 
                 var email = new MimeMessage();
                 email.From.Add(MailboxAddress.Parse(fromAddress));
@@ -66,7 +68,7 @@ namespace backend.Controllers
 
                 // send email
                 using var smtp = new SmtpClient();
-                smtp.Connect("smtp.gmail.com", 587, SecureSocketOptions.StartTls);
+                smtp.Connect(host, port, SecureSocketOptions.StartTls);
                 smtp.Authenticate(username, password);
                 smtp.Send(email);
                 smtp.Disconnect(true);
